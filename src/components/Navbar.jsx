@@ -1,0 +1,111 @@
+import React, { useEffect, useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
+import { MdTranslate, MdDarkMode, MdLightMode } from 'react-icons/md';
+import { IoMenu, IoClose } from 'react-icons/io5';
+import { motion, AnimatePresence } from 'framer-motion';
+import Logo from './Logo';
+
+const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
+    const { theme, toggleTheme } = useTheme();
+
+    return (
+        <nav className="fixed w-full z-40 top-0 left-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-slate-800 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                <a href="/" className="flex items-center gap-2 text-2xl font-bold font-primary bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent">
+                    <Logo /> Ahmad
+                </a>
+
+                <div className="hidden md:flex items-center space-x-8">
+                    {['Home', 'About', 'Services', 'Experience', 'Projects', 'FAQs', 'Contact'].map((item) => (
+                        <a
+                            key={item}
+                            href={item === 'FAQs' ? '#faq' : `#${item.toLowerCase()}`}
+                            className="text-slate-600 dark:text-slate-300 hover:text-primary-500 hover:scale-105 transition-all font-medium font-secondary"
+                        >
+                            {item}
+                        </a>
+                    ))}
+                    <a
+                        href="/AhmadAnsariResume.pdf"
+                        download="Ahmad_Ansari_CV.pdf"
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-primary-500 font-medium font-secondary border-l border-slate-200 dark:border-slate-800 pl-6"
+                    >
+                        CV <span className="text-xs py-0.5 px-2 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">PDF</span>
+                    </a>
+                    <button
+                        onClick={onLoginClick}
+                        className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg shadow-lg hover:bg-primary-700 transition-all hover:scale-105"
+                    >
+                        Login
+                    </button>
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
+                        aria-label="Toggle Theme"
+                    >
+                        {theme === 'dark' ? <MdLightMode size={20} /> : <MdDarkMode size={20} />}
+                    </button>
+                </div>
+
+                {/* Mobile Menu Button */}
+                <button
+                    className="md:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    onClick={toggleMenu}
+                >
+                    {isMenuOpen ? <IoClose size={24} /> : <IoMenu size={24} />}
+                </button>
+            </div>
+
+            {/* Mobile Menu */}
+            <AnimatePresence>
+                {isMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-gray-200 dark:border-slate-800 overflow-hidden"
+                    >
+                        <div className="flex flex-col space-y-4 px-6 py-8">
+                            {['Home', 'About', 'Services', 'Experience', 'Projects', 'FAQs', 'Contact'].map((item) => (
+                                <a
+                                    key={item}
+                                    href={item === 'FAQs' ? '#faq' : `#${item.toLowerCase()}`}
+                                    className="text-lg font-medium text-slate-700 dark:text-slate-200 hover:text-primary-500 transition-colors"
+                                    onClick={toggleMenu}
+                                >
+                                    {item}
+                                </a>
+                            ))}
+                            <div className="pt-4 border-t border-gray-200 dark:border-slate-800">
+                                <button
+                                    onClick={onLoginClick}
+                                    className="block w-full text-center py-3 text-sm font-medium text-white bg-primary-600 rounded-lg shadow-lg"
+                                >
+                                    Login
+                                </button>
+                            </div>
+                            <button
+                                onClick={toggleTheme}
+                                className="w-full flex items-center justify-center space-x-2 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                {theme === 'dark' ? (
+                                    <>
+                                        <MdLightMode size={20} />
+                                        <span>Switch to Light Mode</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <MdDarkMode size={20} />
+                                        <span>Switch to Dark Mode</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </nav>
+    );
+};
+
+export default Navbar;

@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-primary: 'Outfit', sans-serif;
+  --font-secondary: 'Inter', sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    cursor: none !important;
+  }
+
+  body {
+    @apply font-secondary bg-white text-slate-900 transition-colors duration-300 overflow-x-hidden;
+    cursor: none !important;
+  }
+
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-primary;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  .dark .glass-card {
+    @apply bg-slate-900/70 border-slate-800/50 shadow-2xl;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl bg-primary-600 text-white font-medium hover:bg-primary-700 transition-all active:scale-95 shadow-lg shadow-primary-500;
+  }
+
+  .section-padding {
+    @apply py-20 px-6 max-w-7xl mx-auto;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary-500/30 rounded-full hover:bg-primary-500/50 transition-all;
+}
+
+/* Loader Animation */
+.loader-circle {
+  width: 50px;
+  height: 50px;
+  border: 3px solid transparent;
+  border-top-color: theme('colors.primary.500');
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Translator Widget Position */
+#google_translate_element {
+  display: none;
+}
+
+.skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+/* Global cursor hide */
+* {
+  cursor: none !important;
+}
+
+/* Re-enable for mobile if needed, but for desktop we want it hidden */
+@media (max-width: 1024px) {
+  * {
+    cursor: auto !important;
+  }
+}
+
+/* AI Chatbot container */
+.chatbot-container {
+  z-index: 1000;
+}
