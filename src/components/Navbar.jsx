@@ -19,10 +19,12 @@ const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
     }, []);
 
     const handleLogout = async () => {
-        try {
-            await signOut(auth);
-        } catch (error) {
-            console.error("Error logging out:", error);
+        if (window.confirm("Are you sure you want to logout?")) {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Error logging out:", error);
+            }
         }
     };
 
