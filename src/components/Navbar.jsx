@@ -6,10 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Logo from './Logo';
 import { auth } from '../firebase'; // Import auth
 import { onAuthStateChanged, signOut } from 'firebase/auth'; // Import auth functions
+import md5 from 'md5';
 
 const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
     const { theme, toggleTheme } = useTheme();
     const [user, setUser] = useState(null);
+
+    const getGravatarUrl = (email) => {
+        const hash = md5(email.toLowerCase().trim());
+        return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
+    };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -56,7 +62,7 @@ const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
                     {user ? (
                         <div className="flex items-center gap-4">
                             <img
-                                src={user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
+                                src={user.photoURL || getGravatarUrl(user.email)}
                                 alt="Profile"
                                 className="w-10 h-10 rounded-full border-2 border-primary-500 object-cover"
                                 title={user.displayName || user.email}
@@ -121,7 +127,7 @@ const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
+                                                src={user.photoURL || getGravatarUrl(user.email)}
                                                 alt="Profile"
                                                 className="w-10 h-10 rounded-full border-2 border-primary-500 object-cover"
                                             />
