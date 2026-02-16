@@ -11,6 +11,7 @@ import md5 from 'md5';
 const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
     const { theme, toggleTheme } = useTheme();
     const [user, setUser] = useState(null);
+    const [showDropdown, setShowDropdown] = useState(false);
 
     const getGravatarUrl = (email) => {
         const hash = md5(email.toLowerCase().trim());
@@ -28,6 +29,7 @@ const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
         if (window.confirm("Are you sure you want to logout?")) {
             try {
                 await signOut(auth);
+                setShowDropdown(false);
             } catch (error) {
                 console.error("Error logging out:", error);
             }
@@ -59,21 +61,47 @@ const Navbar = ({ toggleMenu, isMenuOpen, onLoginClick }) => {
                         CV <span className="text-xs py-0.5 px-2 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">PDF</span>
                     </a>
 
+
                     {user ? (
-                        <div className="flex items-center gap-4">
-                            <img
-                                src={user.photoURL || getGravatarUrl(user.email)}
-                                alt="Profile"
-                                className="w-10 h-10 rounded-full border-2 border-primary-500 object-cover"
-                                title={user.displayName || user.email}
-                            />
+                        <div className="relative">
                             <button
-                                onClick={handleLogout}
-                                className="p-2 rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
-                                title="Logout"
+                                onClick={() => setShowDropdown(!showDropdown)}
+                                className="flex items-center gap-2 focus:outline-none"
                             >
-                                <MdLogout size={20} />
+                                <img
+                                    src={user.photoURL || getGravatarUrl(user.email)}
+                                    alt="Profile"
+                                    className="w-10 h-10 rounded-full border-2 border-primary-500 object-cover hover:border-primary-600 transition-colors cursor-pointer"
+                                    title={user.displayName || user.email}
+                                />
                             </button>
+
+                            <AnimatePresence>
+                                {showDropdown && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50"
+                                    >
+                                        <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                                {user.displayName || "User"}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2"
+                                        >
+                                            <MdLogout size={18} />
+                                            Logout
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     ) : (
                         <button
