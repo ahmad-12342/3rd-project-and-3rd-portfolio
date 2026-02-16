@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaPaperPlane, FaUser, FaEnvelope, FaPhone, FaExclamationCircle } from 'react-icons/fa';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 const Contact = () => {
     const [formData, setFormData] = useState({
@@ -9,6 +11,8 @@ const Contact = () => {
         message: ''
     });
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     const handleInputChange = (e) => {
         const { id, value } = e.target;
@@ -31,14 +35,29 @@ const Contact = () => {
         return newErrors;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const validationErrors = validate();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
         } else {
-            alert('Message sent successfully!');
-            setFormData({ name: '', email: '', message: '' });
+            setLoading(true);
+            setSuccessMessage('');
+            try {
+                await addDoc(collection(db, 'contacts'), {
+                    name: formData.name,
+                    email: formData.email,
+                    message: formData.message,
+                    timestamp: new Date().toISOString()
+                });
+                setSuccessMessage('Message sent successfully! I will get back to you soon.');
+                setFormData({ name: '', email: '', message: '' });
+            } catch (error) {
+                console.error('Error sending message:', error);
+                setErrors({ submit: 'Failed to send message. Please try again.' });
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -158,8 +177,33 @@ const Contact = () => {
                                 )}
                             </AnimatePresence>
                         </div>
-                        <button type="submit" className="w-full btn-primary flex items-center justify-center gap-2">
-                            <FaPaperPlane /> Send Message
+
+                        {successMessage && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm"
+                            >
+                                {successMessage}
+                            </motion.div>
+                        )}
+
+                        {errors.submit && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm"
+                            >
+                                {errors.submit}
+                            </motion.div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            <FaPaperPlane /> {loading ? 'Sending...' : 'Send Message'}
                         </button>
                     </form>
                 </div>
