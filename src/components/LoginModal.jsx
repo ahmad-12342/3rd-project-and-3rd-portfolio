@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaLock, FaEnvelope, FaTimes, FaUser, FaExclamationCircle } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
+import { auth, provider } from '../firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
 
 const LoginModal = ({ isOpen, onClose }) => {
     const [isLoginView, setIsLoginView] = useState(true);
@@ -8,8 +11,9 @@ const LoginModal = ({ isOpen, onClose }) => {
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
 
@@ -34,20 +38,48 @@ const LoginModal = ({ isOpen, onClose }) => {
             return;
         }
 
-        if (isLoginView) {
-            if (email === 'muhammadansariahmad323@gmail.com' && password === 'admin') {
-                alert('Login Successful! Welcome back, Ahmad.');
+        setLoading(true);
+        setErrors({});
+
+        try {
+            if (isLoginView) {
+                await signInWithEmailAndPassword(auth, email, password);
                 onClose();
             } else {
-                setErrors({ auth: 'Invalid email or password' });
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, {
+                    displayName: name
+                });
+                onClose();
+                // User is automatically logged in after creation
             }
-        } else {
-            alert(`Account created for ${name}! Please login.`);
-            setIsLoginView(true);
-            setErrors({});
-            setEmail('');
-            setPassword('');
-            setName('');
+        } catch (error) {
+            console.error(error);
+            let errorMessage = "An error occurred. Please try again.";
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = "This email is already in use.";
+            } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                errorMessage = "Invalid email or password.";
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Password is too weak.";
+            }
+            setErrors({ auth: errorMessage });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        setLoading(true);
+        setErrors({});
+        try {
+            await signInWithPopup(auth, provider);
+            onClose();
+        } catch (error) {
+            console.error(error);
+            setErrors({ auth: "Google Sign-In failed. Please try again." });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -99,7 +131,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+                        <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
                             {errors.auth && (
                                 <motion.div
                                     initial={{ opacity: 0, height: 0 }}
@@ -202,25 +234,32 @@ const LoginModal = ({ isOpen, onClose }) => {
                                 </AnimatePresence>
                             </div>
 
-                            {isLoginView && (
-                                <div className="flex items-center justify-between text-sm px-1">
-                                    <label className="flex items-center space-x-2 cursor-pointer group">
-                                        <input type="checkbox" className="rounded-md text-primary-600 focus:ring-primary-500 border-slate-300 dark:border-slate-600 dark:bg-slate-700 w-4 h-4 transition-all" />
-                                        <span className="text-slate-600 dark:text-slate-400 group-hover:text-primary-600 transition-colors">Remember me</span>
-                                    </label>
-                                    <a href="#" className="text-primary-600 hover:underline font-medium">Forgot password?</a>
-                                </div>
-                            )}
-
                             <button
                                 type="submit"
-                                className="w-full py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary-500/20 hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+                                disabled={loading}
+                                className="w-full py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary-500/20 hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {isLoginView ? 'Sign In' : 'Create Account'}
+                                {loading ? 'Processing...' : (isLoginView ? 'Sign In' : 'Create Account')}
+                            </button>
+
+                            <div className="relative flex py-2 items-center">
+                                <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                                <span className="flex-shrink-0 mx-4 text-slate-400 text-sm">OR</span>
+                                <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleGoogleLogin}
+                                disabled={loading}
+                                className="w-full py-3.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl font-medium shadow-sm hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-3"
+                            >
+                                <FcGoogle size={22} />
+                                <span>Continue with Google</span>
                             </button>
                         </form>
 
-                        <div className="text-center mt-8 relative z-10">
+                        <div className="text-center mt-6 relative z-10">
                             <p className="text-sm text-slate-600 dark:text-slate-400">
                                 {isLoginView ? "Don't have an account?" : "Already have an account?"}
                                 <button
